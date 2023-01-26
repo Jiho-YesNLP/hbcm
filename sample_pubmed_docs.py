@@ -76,6 +76,7 @@ def sample_docs(f, n=100):
     def chunks (lst, n=10):
         for i in range(0, len(lst), n):
             yield lst[i:i+n]
+            
     for ids_ in chunks(samples):
         print(f'Azure KPE on {ids_[0]}...\r', end='')
         documents = [{
@@ -93,8 +94,8 @@ def sample_docs(f, n=100):
 
 if __name__ == '__main__':
     n = 3000   # Total number of docs to sample
-    pubmed_dir = 'data/'
-    data_out_json = 'sample.jsonl'
+    pubmed_dir = 'data/pubmed/'
+    data_json = 'data/sample.jsonl'
 
     # Sample documents and read keywords and mesh entities from samples.
     files = [glob.glob(os.path.join(pubmed_dir, '*.gz'))]
@@ -104,7 +105,7 @@ if __name__ == '__main__':
     bins = len(files)-1
     
     sample_ids = []
-    with open(data_out_json, 'w') as fh:
+    with open(data_json, 'w') as fh:
         for f in files[:-1]:
             entries = sample_docs(f, n=round(n/bins)+1)
             for _, v in entries.items():
