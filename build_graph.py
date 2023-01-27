@@ -27,7 +27,7 @@ def read_mesh(fp):
     return meshes
     
 def read_kw(fp, n=30000):
-    print('Reading Keyword concepts..')
+    print(f'Reading {n} Keyword concepts..')
     kw_counter = Counter()
     with open(fp) as fh:
         for l in fh:
@@ -59,6 +59,7 @@ def build_edgelist(fp, c2i):
             edges.update(combinations(sorted(concepts), 2))
             edges_df.update(concepts)
     
+    
     # weight normalization (NMI normalized mutual information)
     for (u, v) in edges:
         p_u = edges_df[u] / num_docs
@@ -85,7 +86,7 @@ if __name__ == '__main__':
     
     # Build a vocabulary of biomedical concepts (i.e., mesh and keywords)
     meshes = read_mesh(mesh_file)
-    keywords = read_kw(data_json)
+    keywords = read_kw(data_json, n=10000)
     
     # Build a vocabulary of concepts
     cpt2idx = defaultdict(lambda: len(cpt2idx))
