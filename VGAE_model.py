@@ -57,10 +57,10 @@ class DeepVGAE(VGAE):
             self.decoder(z, pos_edge_index, sigmoid=True) + 1e-15).mean()
 
         # Do not include self-loops in negative samples
-        edge_index_tmp, _ = remove_self_loops(edge_index)
-        edge_index_tmp, _ = add_self_loops(edge_index_tmp)
+        # edge_index_tmp, _ = remove_self_loops(edge_index)
+        # edge_index_tmp, _ = add_self_loops(edge_index_tmp)
 
-        neg_edge_index = negative_sampling(edge_index_tmp, z.size(0), pos_edge_index.size(1))
+        neg_edge_index = negative_sampling(edge_index, z.size(0), pos_edge_index.size(1))
         neg_loss = -torch.log(1 - self.decoder(z, neg_edge_index, sigmoid=True) + 1e-15).mean()
 
         kl_loss = 1 / x.size(0) * self.kl_loss()
@@ -92,7 +92,7 @@ if __name__=='__main__':
             rows.append(u)
             cols.append(v)
 
-    edge_index = torch.stack([torch.tensor(rows).to(torch.long), 
+    edge_index = torch.stack([torch.tensor(rows).to(torch.long),
                                     torch.tensor(cols).to(torch.long)], dim=0)
     edge_index = coalesce(edge_index, num_nodes=len(data['ent2idx']))
     data = Data(x=x, edge_index=edge_index)
@@ -139,3 +139,5 @@ if __name__=='__main__':
                                             T_data.test_pos_edge_index,
                                             T_data.test_neg_edge_index)
             print("Epoch {} - Loss: {} ROC_AUC: {} Precision: {}".format(epoch, loss.cpu().item(), roc_auc, ap))
+
+            

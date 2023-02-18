@@ -47,7 +47,7 @@ def build_edgelist(fp, c2i):
     :return: (edges, df, |C|)
     """
     edges = Counter()
-    edges_df = Counter()
+    node_df = Counter() # document frequency (aobut 1/3 of all concepts appear)
     num_docs = 0
     
     # extract edges from docs
@@ -57,13 +57,13 @@ def build_edgelist(fp, c2i):
             doc = json.loads(l)
             concepts = [c2i[c] for c in doc['kw'] + doc['mesh'] if c in c2i]
             edges.update(combinations(sorted(concepts), 2))
-            edges_df.update(concepts)
+            node_df.update(concepts)
     
     
     # weight normalization (NMI normalized mutual information)
     for (u, v) in edges:
-        p_u = edges_df[u] / num_docs
-        p_v = edges_df[v] / num_docs
+        p_u = node_df[u] / num_docs
+        p_v = node_df[v] / num_docs
         p_uv = edges[(u, v)] / num_docs
         I = p_uv * math.log(p_uv / (p_u * p_v))
         if p_u > p_uv:
@@ -76,13 +76,13 @@ def build_edgelist(fp, c2i):
         w = 2 * I / (h_u + h_v)
         edges[(u, v)] = w
         
-    return edges, edges_df, num_docs
+    return edges, node_df, num_docs
     
     
 if __name__ == '__main__':
     data_json = 'data/sample.jsonl'
     mesh_file = 'data/desc2023.xml'
-    db_file = 'data/edgelist.pkl'
+    db_file = 'data/raw/edgelist.pkl'
     
     # Build a vocabulary of biomedical concepts (i.e., mesh and keywords)
     meshes = read_mesh(mesh_file)
@@ -95,7 +95,7 @@ if __name__ == '__main__':
         idx2cpt[cpt2idx[cpt]] = cpt
         
     # build a graph
-    edges, edges_df, num_docs = build_edgelist(data_json, cpt2idx)
+    edges, node_df, num_docs = build_edgelist(data_json, cpt2idx)
     
     # save
     print(f'Saving a graph db in {db_file}: ')
@@ -104,7 +104,7 @@ if __name__ == '__main__':
         'edges': edges,
         'ent2idx': dict(cpt2idx),
         'idx2ent': idx2cpt,
-        'idx2df': edges_df,
+        'idx2df': node_df,
         'collection_size': num_docs
     }
     with open(db_file, 'wb') as f:
